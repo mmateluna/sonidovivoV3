@@ -1,23 +1,29 @@
-import { beforeEach, describe, expect, test } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { CarritoProvider, CLAVE_CARRITO } from "../contexto/CarritoContext";
+import { AuthProvider } from "../contexto/AuthContext";
 import Catalogo from "../paginas/Catalogo";
 import Carrito from "../paginas/Carrito";
 import Navbar from "../componentes/organismos/Navbar";
 import { productos } from "../datos/productos";
 import { formatearPrecio } from "../utilidades/formato";
 
-// MemoryRouter simula el router sin necesitar un navegador real.
+vi.mock("../servicios/api", async () => {
+  return await import("./apiMock");
+});
+
 function renderizarTienda() {
   return render(
     <MemoryRouter>
-      <CarritoProvider>
-        <Navbar />
-        <Catalogo />
-        <Carrito />
-      </CarritoProvider>
+      <AuthProvider>
+        <CarritoProvider>
+          <Navbar />
+          <Catalogo />
+          <Carrito />
+        </CarritoProvider>
+      </AuthProvider>
     </MemoryRouter>,
   );
 }
@@ -27,15 +33,17 @@ describe("carrito de compras", () => {
     localStorage.clear(); // cada prueba parte con el carrito vacío
   });
 
-  test("empieza vacío", () => {
+  test("empieza vacío", async () => {
     renderizarTienda();
     expect(screen.getByText("Tu carrito está vacío.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Carrito (0)" })).toBeInTheDocument();
+    await screen.findByRole("heading", { name: "Guitarra Acústica Folk" });
   });
 
   test("agregar un producto actualiza el contador y la tabla", async () => {
     const usuario = userEvent.setup();
     renderizarTienda();
+    await screen.findAllByRole("button", { name: "Agregar" });
 
     await usuario.click(screen.getAllByRole("button", { name: "Agregar" })[0]);
 
@@ -46,6 +54,7 @@ describe("carrito de compras", () => {
   test("muestra el total del producto agregado", async () => {
     const usuario = userEvent.setup();
     renderizarTienda();
+    await screen.findAllByRole("button", { name: "Agregar" });
 
     await usuario.click(screen.getAllByRole("button", { name: "Agregar" })[0]);
 
@@ -55,6 +64,7 @@ describe("carrito de compras", () => {
   test("agregar el mismo producto dos veces suma la cantidad (no duplica la fila)", async () => {
     const usuario = userEvent.setup();
     renderizarTienda();
+    await screen.findAllByRole("button", { name: "Agregar" });
 
     const botones = screen.getAllByRole("button", { name: "Agregar" });
     await usuario.click(botones[0]);
@@ -68,6 +78,7 @@ describe("carrito de compras", () => {
   test("eliminar vuelve a dejar el carrito vacío y se guarda en localStorage", async () => {
     const usuario = userEvent.setup();
     renderizarTienda();
+    await screen.findAllByRole("button", { name: "Agregar" });
 
     await usuario.click(screen.getAllByRole("button", { name: "Agregar" })[0]);
     expect(JSON.parse(localStorage.getItem(CLAVE_CARRITO) ?? "[]")).toHaveLength(1);
@@ -78,8 +89,8 @@ describe("carrito de compras", () => {
     expect(JSON.parse(localStorage.getItem(CLAVE_CARRITO) ?? "[]")).toHaveLength(0);
   });
 
-  test("el catálogo muestra todos los productos", () => {
+  test("el catálogo muestra todos los productos", async () => {
     renderizarTienda();
-    expect(screen.getAllByRole("button", { name: "Agregar" })).toHaveLength(productos.length);
+    expect(await screen.findAllByRole("button", { name: "Agregar" })).toHaveLength(productos.length);
   });
 });

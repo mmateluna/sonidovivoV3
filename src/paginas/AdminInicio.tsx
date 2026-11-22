@@ -1,7 +1,10 @@
 import TarjetaPanel from "../componentes/moleculas/TarjetaPanel";
 import BotonLink from "../componentes/atomos/BotonLink";
+import { useAuth } from "../contexto/AuthContext";
 
 function AdminInicio() {
+  const { usuario } = useAuth();
+
   return (
     <div className="container py-4">
       <h2>Panel de administración</h2>
@@ -15,13 +18,15 @@ function AdminInicio() {
             </BotonLink>
           </TarjetaPanel>
         </div>
-        <div className="col">
-          <TarjetaPanel titulo="Usuarios" descripcion="Administrar clientes, vendedores y administradores.">
-            <BotonLink to="/admin/usuarios" pequeno>
-              Gestionar usuarios
-            </BotonLink>
-          </TarjetaPanel>
-        </div>
+        {usuario?.tipo === "Administrador" && (
+          <div className="col">
+            <TarjetaPanel titulo="Usuarios" descripcion="Administrar clientes, vendedores y administradores.">
+              <BotonLink to="/admin/usuarios" pequeno>
+                Gestionar usuarios
+              </BotonLink>
+            </TarjetaPanel>
+          </div>
+        )}
         <div className="col">
           <TarjetaPanel titulo="Sitio público" descripcion="Volver a la tienda visible para los clientes.">
             <BotonLink to="/" variante="secondary" pequeno>

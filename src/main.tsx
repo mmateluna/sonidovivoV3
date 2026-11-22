@@ -5,15 +5,17 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./index.css";
 import App from "./App";
 import { CarritoProvider } from "./contexto/CarritoContext";
+import { AuthProvider } from "./contexto/AuthContext";
 
-// Orden importante: el Router envuelve todo (para poder usar rutas)
-// y el CarritoProvider también (para que cualquier componente pueda usar el carrito).
+// Router para las rutas, AuthProvider para la sesión y CarritoProvider para la compra.
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
-      <CarritoProvider>
-        <App />
-      </CarritoProvider>
+      <AuthProvider>
+        <CarritoProvider>
+          <App />
+        </CarritoProvider>
+      </AuthProvider>
     </BrowserRouter>
   </StrictMode>,
 );

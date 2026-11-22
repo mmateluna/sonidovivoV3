@@ -158,9 +158,13 @@ export interface DatosUsuario {
   region: string;
   comuna: string;
   direccion: string;
+  clave?: string; // obligatoria al registrarse o al crear; opcional al editar
 }
 
-export function validarUsuario(datos: DatosUsuario): Errores<DatosUsuario> {
+export function validarUsuario(
+  datos: DatosUsuario,
+  opciones?: { claveObligatoria?: boolean },
+): Errores<DatosUsuario> {
   const errores: Errores<DatosUsuario> = {};
   agregar(errores, "run", validarCampoRun(datos.run));
   agregar(
@@ -192,6 +196,10 @@ export function validarUsuario(datos: DatosUsuario): Errores<DatosUsuario> {
       "La dirección no puede superar 300 caracteres.",
     ),
   );
+  const clave = datos.clave ?? "";
+  if (opciones?.claveObligatoria || clave !== "") {
+    agregar(errores, "clave", validarClave(clave));
+  }
   return errores;
 }
 
@@ -208,6 +216,8 @@ export interface DatosProducto {
   imagen: string; // opcional
   stock: string;
   stockCritico: string; // opcional
+  marca?: string; // opcional: el detalle del catálogo la muestra si viene
+  modelo?: string;
 }
 
 const esEnteroMayorOIgualACero = (texto: string): boolean =>
@@ -233,9 +243,15 @@ export function validarProducto(datos: DatosProducto): Errores<DatosProducto> {
     ),
   );
 
-  // Descripción: opcional, máximo 500
+  // Descripción, marca y modelo son opcionales. Si se escriben, tienen un máximo.
   if (datos.descripcion.trim().length > 500) {
     errores.descripcion = "La descripción no puede superar 500 caracteres.";
+  }
+  if ((datos.marca ?? "").trim().length > 80) {
+    errores.marca = "La marca no puede superar 80 caracteres.";
+  }
+  if ((datos.modelo ?? "").trim().length > 80) {
+    errores.modelo = "El modelo no puede superar 80 caracteres.";
   }
 
   // Precio: obligatorio, mínimo 0 (acepta decimales)

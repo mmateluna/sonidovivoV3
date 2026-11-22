@@ -1,5 +1,8 @@
 node_modules
 dist
 *.local
+backend/target
+backend/data
+pdf-extract.txt
 .vscode/*
 !.vscode/extensions.json

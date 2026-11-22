@@ -1,6 +1,7 @@
 import type { Producto } from "../tipos";
 
-// "Base de datos" de prueba (equivale al arreglo productos de main.js).
+// Semilla del catálogo. La tienda en ejecución la pide a la API.
+// El selector de categorías y las pruebas siguen usando este arreglo.
 export const productos: Producto[] = [
   {
     "id": 1,

@@ -4,7 +4,7 @@ import { useCarrito } from "../../contexto/CarritoContext";
 import { formatearPrecio } from "../../utilidades/formato";
 
 function TablaCarrito() {
-  const { items, total, eliminar } = useCarrito();
+  const { items, total, eliminar, cambiarCantidad } = useCarrito();
 
   // Carrito vacío: mostramos un mensaje en vez de la tabla
   if (items.length === 0) {
@@ -39,7 +39,9 @@ function TablaCarrito() {
                 imagen={item.imagen}
                 precio={item.precio}
                 cantidad={item.cantidad}
+                stock={item.stock}
                 onEliminar={eliminar}
+                onCambiarCantidad={cambiarCantidad}
               />
             ))}
           </tbody>
@@ -47,9 +49,12 @@ function TablaCarrito() {
       </div>
 
       <p className="total-carrito fs-4 fw-bold text-end">Total: {formatearPrecio(total)}</p>
-      <BotonLink to="/catalogo" variante="secondary">
-        Seguir comprando
-      </BotonLink>
+      <div className="d-flex flex-wrap gap-2">
+        <BotonLink to="/catalogo" variante="secondary">
+          Seguir comprando
+        </BotonLink>
+        <BotonLink to="/pago">Ir a pago</BotonLink>
+      </div>
     </>
   );
 }

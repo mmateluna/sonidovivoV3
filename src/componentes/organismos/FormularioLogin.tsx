@@ -1,36 +1,44 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import CampoFormulario from "../moleculas/CampoFormulario";
 import Boton from "../atomos/Boton";
+import { useAuth } from "../../contexto/AuthContext";
 import { validarLogin, hayErrores, type DatosLogin, type Errores } from "../../utilidades/validaciones";
 
 function FormularioLogin() {
-  // useState guarda lo que el usuario escribe. Cada vez que cambia, React vuelve a dibujar el formulario.
+  const { iniciarSesion, usuario } = useAuth();
   const [datos, setDatos] = useState<DatosLogin>({ correo: "", clave: "" });
   const [errores, setErrores] = useState<Errores<DatosLogin>>({});
-  const [exito, setExito] = useState(false);
 
-  // Un solo manejador para todos los campos: usa el atributo name del input ("correo" o "clave").
   const manejarCambio = (evento: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = evento.target;
     setDatos({ ...datos, [name]: value });
-    setExito(false);
   };
 
-  const manejarEnvio = (evento: FormEvent<HTMLFormElement>) => {
-    evento.preventDefault(); // equivale al preventDefault() de la versión HTML
+  const manejarEnvio = async (evento: FormEvent<HTMLFormElement>) => {
+    evento.preventDefault();
     const nuevosErrores = validarLogin(datos);
     setErrores(nuevosErrores);
-    setExito(!hayErrores(nuevosErrores));
+    if (hayErrores(nuevosErrores)) return;
+    const mensaje = await iniciarSesion(datos.correo.trim(), datos.clave);
+    if (mensaje) {
+      setErrores({ correo: mensaje });
+      return;
+    }
   };
+
+  if (usuario) {
+    return (
+      <div className="alert alert-success" role="alert">
+        <p className="mb-1">Sesión iniciada correctamente. ¡Bienvenido/a!</p>
+        <p className="mb-0">
+          {usuario.nombre} {usuario.apellidos}. Entraste como {usuario.tipo}.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={manejarEnvio} noValidate>
-      {exito && (
-        <div className="alert alert-success" role="alert">
-          Inicio de sesión simulado exitoso. ¡Bienvenido/a!
-        </div>
-      )}
-
       <CampoFormulario
         id="login-correo"
         etiqueta="Correo"

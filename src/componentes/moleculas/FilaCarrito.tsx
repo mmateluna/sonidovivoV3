@@ -1,4 +1,5 @@
 import Boton from "../atomos/Boton";
+import SelectorCantidad from "./SelectorCantidad";
 import { formatearPrecio } from "../../utilidades/formato";
 
 interface FilaCarritoProps {
@@ -7,11 +8,14 @@ interface FilaCarritoProps {
   imagen: string;
   precio: number;
   cantidad: number;
+  stock: number;
   onEliminar: (id: number) => void;
+  onCambiarCantidad: (id: number, cantidad: number) => void;
 }
 
-// Una fila (<tr>) de la tabla del carrito
-function FilaCarrito({ id, nombre, imagen, precio, cantidad, onEliminar }: FilaCarritoProps) {
+function FilaCarrito({ id, nombre, imagen, precio, cantidad, stock, onEliminar, onCambiarCantidad }: FilaCarritoProps) {
+  const tope = stock > 0 ? stock : 99;
+
   return (
     <tr>
       <td>
@@ -19,7 +23,14 @@ function FilaCarrito({ id, nombre, imagen, precio, cantidad, onEliminar }: FilaC
       </td>
       <td>{nombre}</td>
       <td>{formatearPrecio(precio)}</td>
-      <td>{cantidad}</td>
+      <td>
+        <SelectorCantidad
+          id={`carrito-cantidad-${id}`}
+          valor={cantidad}
+          maximo={tope}
+          onChange={(nueva) => onCambiarCantidad(id, nueva)}
+        />
+      </td>
       <td>{formatearPrecio(precio * cantidad)}</td>
       <td>
         <Boton variante="danger" pequeno onClick={() => onEliminar(id)}>

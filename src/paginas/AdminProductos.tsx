@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import TablaProductosAdmin from "../componentes/organismos/TablaProductosAdmin";
 import FormularioProducto from "../componentes/organismos/FormularioProducto";
 import {
@@ -6,42 +6,42 @@ import {
   crearProducto,
   eliminarProducto,
   listarProductos,
-  obtenerProducto,
-} from "../datos/repositorio";
+} from "../servicios/api";
 import type { DatosProducto } from "../utilidades/validaciones";
 import type { Producto } from "../tipos";
 
-// Arma el producto que entiende el repositorio. Marca y modelo no están en el formulario:
-// si estamos editando, se conservan; si es nuevo, quedan vacíos.
-function productoDesdeFormulario(datos: DatosProducto, anterior: Producto | null): Omit<Producto, "id"> {
+// Lo que se guarda aquí es lo que ve el catálogo: misma API, mismos campos.
+function productoDesdeFormulario(datos: DatosProducto): Omit<Producto, "id"> {
   return {
     codigo: datos.codigo.trim(),
     categoria: datos.categoria,
     nombre: datos.nombre.trim(),
     descripcion: datos.descripcion.trim(),
-    precio: Number(datos.precio),
+    precio: Math.round(Number(datos.precio)),
     imagen: datos.imagen.trim(),
     stock: Number(datos.stock),
     stockCritico: datos.stockCritico.trim() === "" ? 0 : Number(datos.stockCritico),
-    marca: anterior?.marca ?? "",
-    modelo: anterior?.modelo ?? "",
+    marca: (datos.marca ?? "").trim(),
+    modelo: (datos.modelo ?? "").trim(),
   };
 }
 
 function AdminProductos() {
-  // La tabla lee el repositorio, no el arreglo fijo de productos.ts.
-  const [productosAdmin, setProductosAdmin] = useState<Producto[]>(() => listarProductos());
+  const [productosAdmin, setProductosAdmin] = useState<Producto[]>([]);
   const [idEditando, setIdEditando] = useState<number | null>(null);
-  // La key del formulario solo cambia al elegir Editar, Limpiar o al borrar el que se está editando.
-  // Al guardar no cambia: el mensaje de éxito sigue y el próximo Guardar actualiza el mismo id.
   const [claveFormulario, setClaveFormulario] = useState<number | "nuevo">("nuevo");
   const [versionFormulario, setVersionFormulario] = useState(0);
+  const [error, setError] = useState("");
   const seccionFormulario = useRef<HTMLDivElement>(null);
 
   const productoEditando =
     idEditando === null ? null : productosAdmin.find((producto) => producto.id === idEditando) ?? null;
 
-  const recargar = () => setProductosAdmin(listarProductos());
+  const recargar = async () => setProductosAdmin(await listarProductos());
+
+  useEffect(() => {
+    recargar().catch(() => setError("No se pudieron cargar los productos."));
+  }, []);
 
   const editar = (id: number) => {
     setIdEditando(id);
@@ -49,28 +49,32 @@ function AdminProductos() {
     seccionFormulario.current?.scrollIntoView?.({ behavior: "smooth" });
   };
 
-  const guardar = (datos: DatosProducto) => {
-    const anterior = idEditando === null ? null : obtenerProducto(idEditando) ?? null;
-    const campos = productoDesdeFormulario(datos, anterior);
+  const guardar = async (datos: DatosProducto) => {
+    const campos = productoDesdeFormulario(datos);
 
     if (idEditando === null) {
-      const nuevo = crearProducto(campos);
+      const nuevo = await crearProducto(campos);
       setIdEditando(nuevo.id);
     } else {
-      actualizarProducto(idEditando, campos);
+      await actualizarProducto(idEditando, campos);
     }
-    recargar();
+    setError("");
+    await recargar();
   };
 
-  const eliminar = (id: number) => {
-    eliminarProducto(id);
-    if (idEditando === id) {
-      setIdEditando(null);
-      setClaveFormulario("nuevo");
-      // Si la key ya era "nuevo" (se acababa de crear), igual hay que montar el formulario vacío.
-      setVersionFormulario((version) => version + 1);
+  const eliminar = async (id: number) => {
+    try {
+      await eliminarProducto(id);
+      if (idEditando === id) {
+        setIdEditando(null);
+        setClaveFormulario("nuevo");
+        setVersionFormulario((version) => version + 1);
+      }
+      setError("");
+      await recargar();
+    } catch (fallo) {
+      setError(fallo instanceof Error ? fallo.message : "No se pudo eliminar el producto.");
     }
-    recargar();
   };
 
   const prepararNuevo = () => {
@@ -81,6 +85,8 @@ function AdminProductos() {
   return (
     <div className="container py-4">
       <h2 className="mb-3">Gestión de productos</h2>
+      <p className="mb-3">Esta lista es el catálogo de la tienda. Crear, editar o eliminar cambia lo que ve el cliente.</p>
+      {error && <p className="text-danger">{error}</p>}
       <TablaProductosAdmin productos={productosAdmin} onEditar={editar} onEliminar={eliminar} />
 
       <div ref={seccionFormulario} className="mt-5">
@@ -89,7 +95,7 @@ function AdminProductos() {
         </h2>
         <FormularioProducto
           key={`${claveFormulario}-${versionFormulario}`}
-          producto={typeof claveFormulario === "number" ? obtenerProducto(claveFormulario) : null}
+          producto={typeof claveFormulario === "number" ? productosAdmin.find((producto) => producto.id === claveFormulario) ?? null : null}
           onGuardar={guardar}
           onLimpiar={prepararNuevo}
         />

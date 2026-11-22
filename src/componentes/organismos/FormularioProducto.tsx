@@ -10,8 +10,8 @@ import type { Producto } from "../../tipos";
 interface FormularioProductoProps {
   // Si viene un producto, el formulario se abre con sus datos cargados (modo "Editar").
   producto?: Producto | null;
-  // La página lo usa para crear o actualizar en el repositorio.
-  onGuardar: (datos: DatosProducto) => void;
+  // La página lo usa para crear o actualizar en la API.
+  onGuardar: (datos: DatosProducto) => void | Promise<void>;
   onLimpiar?: () => void;
 }
 
@@ -20,6 +20,8 @@ function datosDesdeProducto(producto?: Producto | null): DatosProducto {
     codigo: producto?.codigo ?? "",
     categoria: producto?.categoria ?? "",
     nombre: producto?.nombre ?? "",
+    marca: producto?.marca ?? "",
+    modelo: producto?.modelo ?? "",
     descripcion: producto?.descripcion ?? "",
     precio: producto ? String(producto.precio) : "",
     imagen: producto?.imagen ?? "",
@@ -32,14 +34,16 @@ function FormularioProducto({ producto, onGuardar, onLimpiar }: FormularioProduc
   const [datos, setDatos] = useState<DatosProducto>(() => datosDesdeProducto(producto));
   const [errores, setErrores] = useState<Errores<DatosProducto>>({});
   const [exito, setExito] = useState(false);
+  const [errorGeneral, setErrorGeneral] = useState("");
 
   const manejarCambio = (evento: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = evento.target;
-    setDatos({ ...datos, [name]: value });
+    setDatos((previos) => ({ ...previos, [name]: value }));
     setExito(false);
+    setErrorGeneral("");
   };
 
-  const manejarEnvio = (evento: FormEvent<HTMLFormElement>) => {
+  const manejarEnvio = async (evento: FormEvent<HTMLFormElement>) => {
     evento.preventDefault();
     const nuevosErrores = validarProducto(datos);
     setErrores(nuevosErrores);
@@ -47,8 +51,14 @@ function FormularioProducto({ producto, onGuardar, onLimpiar }: FormularioProduc
       setExito(false);
       return;
     }
-    onGuardar(datos);
-    setExito(true);
+    try {
+      await onGuardar(datos);
+      setErrorGeneral("");
+      setExito(true);
+    } catch (error) {
+      setExito(false);
+      setErrorGeneral(error instanceof Error ? error.message : "No se pudo guardar el producto.");
+    }
   };
 
   const limpiar = () => {
@@ -60,6 +70,11 @@ function FormularioProducto({ producto, onGuardar, onLimpiar }: FormularioProduc
 
   return (
     <form onSubmit={manejarEnvio} noValidate>
+      {errorGeneral && (
+        <div className="alert alert-danger" role="alert">
+          {errorGeneral}
+        </div>
+      )}
       {exito && (
         <div className="alert alert-success" role="alert">
           Producto guardado correctamente.
@@ -102,6 +117,33 @@ function FormularioProducto({ producto, onGuardar, onLimpiar }: FormularioProduc
         placeholder="Nombre"
         maxLength={100}
       />
+
+      <div className="row">
+        <div className="col-md-6">
+          <CampoFormulario
+            id="prod-marca"
+            etiqueta="Marca (opcional)"
+            nombre="marca"
+            valor={datos.marca ?? ""}
+            onChange={manejarCambio}
+            error={errores.marca}
+            placeholder="Yamaha"
+            maxLength={80}
+          />
+        </div>
+        <div className="col-md-6">
+          <CampoFormulario
+            id="prod-modelo"
+            etiqueta="Modelo (opcional)"
+            nombre="modelo"
+            valor={datos.modelo ?? ""}
+            onChange={manejarCambio}
+            error={errores.modelo}
+            placeholder="F310"
+            maxLength={80}
+          />
+        </div>
+      </div>
 
       <CampoTextArea
         id="prod-descripcion"

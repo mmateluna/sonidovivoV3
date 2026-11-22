@@ -16,9 +16,10 @@ interface FormularioUsuarioProps {
   usuario?: UsuarioAdmin | null;
   // En edición el RUN no cambia: es la clave del registro.
   bloquearRun?: boolean;
-  // Si la página lo pasa, Guardar escribe en el repositorio. Si no, sigue siendo simulación (registro público).
-  // Devuelve un mensaje si no se pudo guardar (por ejemplo, RUN repetido).
-  onGuardar?: (datos: DatosUsuario) => string | void;
+  // En el registro y al crear un usuario la contraseña es obligatoria.
+  claveObligatoria?: boolean;
+  // Si la página lo pasa, Guardar llama a la API. Si no, el organismo sigue en modo de prueba.
+  onGuardar?: (datos: DatosUsuario) => string | void | Promise<string | void>;
   onLimpiar?: () => void;
 }
 
@@ -33,6 +34,7 @@ function datosDesdeUsuario(usuario?: UsuarioAdmin | null, tipoInicial?: TipoUsua
     region: usuario?.region ?? "",
     comuna: usuario?.comuna ?? "",
     direccion: usuario?.direccion ?? "",
+    clave: "",
   };
 }
 
@@ -43,6 +45,7 @@ function FormularioUsuario({
   mostrarLimpiar = false,
   usuario = null,
   bloquearRun = false,
+  claveObligatoria = false,
   onGuardar,
   onLimpiar,
 }: FormularioUsuarioProps) {
@@ -67,19 +70,24 @@ function FormularioUsuario({
     }
   };
 
-  const manejarEnvio = (evento: FormEvent<HTMLFormElement>) => {
+  const manejarEnvio = async (evento: FormEvent<HTMLFormElement>) => {
     evento.preventDefault();
-    const nuevosErrores = validarUsuario(datos);
-    if (!hayErrores(nuevosErrores) && onGuardar) {
-      const mensaje = onGuardar(datos);
+    const nuevosErrores = validarUsuario(datos, { claveObligatoria });
+    if (hayErrores(nuevosErrores)) {
+      setErrores(nuevosErrores);
+      setExito(false);
+      return;
+    }
+    if (onGuardar) {
+      const mensaje = await onGuardar(datos);
       if (mensaje) {
         setErrores({ ...nuevosErrores, run: mensaje });
         setExito(false);
         return;
       }
     }
-    setErrores(nuevosErrores);
-    setExito(!hayErrores(nuevosErrores));
+    setErrores({});
+    setExito(true);
   };
 
   const limpiar = () => {
@@ -177,6 +185,18 @@ function FormularioUsuario({
           />
         </div>
       </div>
+
+      <CampoFormulario
+        id="clave-usuario"
+        etiqueta={claveObligatoria ? "Contraseña" : "Contraseña (opcional)"}
+        nombre="clave"
+        tipo="password"
+        valor={datos.clave ?? ""}
+        onChange={manejarCambio}
+        error={errores.clave}
+        placeholder="4 a 10 caracteres"
+        maxLength={10}
+      />
 
       <div className="row">
         <div className="col-md-6">

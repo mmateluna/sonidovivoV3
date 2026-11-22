@@ -1,6 +1,10 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../../contexto/AuthContext";
 
 function Footer() {
+  const { usuario } = useAuth();
+  const puedeAdministrar = usuario?.tipo === "Administrador" || usuario?.tipo === "Vendedor";
+
   return (
     <footer className="pie-pagina mt-auto pt-4">
       <div className="container">
@@ -25,9 +29,11 @@ function Footer() {
             <p className="mb-1">
               <Link to="/contacto">Contáctanos</Link>
             </p>
-            <p className="mb-0">
-              <Link to="/admin">Administración</Link>
-            </p>
+            {puedeAdministrar && (
+              <p className="mb-0">
+                <Link to="/admin">Administración</Link>
+              </p>
+            )}
           </div>
         </div>
 

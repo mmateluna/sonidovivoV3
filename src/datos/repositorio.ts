@@ -1,19 +1,13 @@
 /* ============================================
    SONIDO VIVO - repositorio.ts
-   Patrón Repositorio: un solo lugar crea, lee,
-   actualiza y elimina productos y usuarios.
-   Los componentes piden los datos aquí; no los guardan ellos.
+   Este módulo ya no es la fuente de la tienda.
+   El catálogo y el admin piden a la API (servicios/api.ts).
+   El patrón Repositorio de la evaluación está en el backend:
+   ProductoRepositorio y UsuarioRepositorio.
 
-   Atomic Design dibuja la pantalla (átomos, moléculas, organismos).
-   El Context del carrito comparte la compra entre componentes.
-   Este archivo guarda los registros del catálogo y del admin.
-
-   productos.ts y usuarios.ts son la semilla (los datos iniciales).
-   Si todavía no hay nada en localStorage, usamos esa semilla.
-   Cuando se crea, edita o elimina, la lista completa se guarda
-   en localStorage, igual que el carrito. Al recargar, el cambio sigue ahí.
-
-   Login y contacto no pasan por aquí: siguen siendo una simulación.
+   Se conserva para las pruebas unitarias. El doble apiMock.ts
+   delega aquí, así Vitest no necesita Spring Boot encendido.
+   El carrito sigue en su propio Context y en localStorage.
    ============================================ */
 
 import type { Producto, UsuarioAdmin } from "../tipos";

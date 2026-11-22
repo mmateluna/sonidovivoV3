@@ -7,9 +7,10 @@ interface BotonAgregarProps {
   onAgregar: () => void;
   texto?: string;
   pequeno?: boolean;
+  deshabilitado?: boolean;
 }
 
-function BotonAgregar({ onAgregar, texto = "Agregar", pequeno = false }: BotonAgregarProps) {
+function BotonAgregar({ onAgregar, texto = "Agregar", pequeno = false, deshabilitado = false }: BotonAgregarProps) {
   const [agregado, setAgregado] = useState(false);
 
   // Cuando "agregado" pasa a true, programamos volver a false en 1.5 segundos.
@@ -25,7 +26,7 @@ function BotonAgregar({ onAgregar, texto = "Agregar", pequeno = false }: BotonAg
   };
 
   return (
-    <Boton variante={agregado ? "success" : "primary"} pequeno={pequeno} onClick={manejarClick}>
+    <Boton variante={agregado ? "success" : "primary"} pequeno={pequeno} disabled={deshabilitado} onClick={manejarClick}>
       {agregado ? "¡Agregado!" : texto}
     </Boton>
   );

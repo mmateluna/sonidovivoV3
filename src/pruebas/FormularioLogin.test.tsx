@@ -1,12 +1,29 @@
-import { describe, expect, test } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import FormularioLogin from "../componentes/organismos/FormularioLogin";
+import { AuthProvider } from "../contexto/AuthContext";
+
+vi.mock("../servicios/api", async () => {
+  return await import("./apiMock");
+});
+
+function renderizar() {
+  return render(
+    <AuthProvider>
+      <FormularioLogin />
+    </AuthProvider>,
+  );
+}
 
 describe("FormularioLogin", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
   test("valida correo y contraseña obligatorios", async () => {
     const usuario = userEvent.setup();
-    render(<FormularioLogin />);
+    renderizar();
 
     await usuario.click(screen.getByRole("button", { name: "Ingresar" }));
 
@@ -16,7 +33,7 @@ describe("FormularioLogin", () => {
 
   test("rechaza un correo con dominio no permitido", async () => {
     const usuario = userEvent.setup();
-    render(<FormularioLogin />);
+    renderizar();
 
     await usuario.type(screen.getByLabelText("Correo"), "laura@hotmail.com");
     await usuario.type(screen.getByLabelText("Contraseña"), "1234");
@@ -29,7 +46,7 @@ describe("FormularioLogin", () => {
 
   test("rechaza una contraseña de menos de 4 caracteres", async () => {
     const usuario = userEvent.setup();
-    render(<FormularioLogin />);
+    renderizar();
 
     await usuario.type(screen.getByLabelText("Correo"), "laura@duoc.cl");
     await usuario.type(screen.getByLabelText("Contraseña"), "123");
@@ -40,12 +57,15 @@ describe("FormularioLogin", () => {
 
   test("con datos correctos muestra el mensaje de bienvenida", async () => {
     const usuario = userEvent.setup();
-    render(<FormularioLogin />);
+    renderizar();
 
     await usuario.type(screen.getByLabelText("Correo"), "laura@duoc.cl");
     await usuario.type(screen.getByLabelText("Contraseña"), "1234");
     await usuario.click(screen.getByRole("button", { name: "Ingresar" }));
 
-    expect(screen.getByText("Inicio de sesión simulado exitoso. ¡Bienvenido/a!")).toBeInTheDocument();
+    expect(await screen.findByText("Sesión iniciada correctamente. ¡Bienvenido/a!")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Correo")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Contraseña")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Ingresar" })).not.toBeInTheDocument();
   });
 });

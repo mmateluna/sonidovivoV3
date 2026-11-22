@@ -1,15 +1,27 @@
+import { useEffect, useState } from "react";
 import ListaProductos from "../componentes/organismos/ListaProductos";
 import BotonLink from "../componentes/atomos/BotonLink";
-import { productos } from "../datos/productos";
+import { listarProductos } from "../servicios/api";
 import type { Producto } from "../tipos";
 
 // Un producto de distintos rubros para la portada
 const CODIGOS_DESTACADOS = ["GA001", "GE001", "BT001", "TC002"];
 
 function Inicio() {
-  const destacados = CODIGOS_DESTACADOS.map((codigo) => productos.find((p) => p.codigo === codigo)).filter(
-    (p): p is Producto => p !== undefined,
-  );
+  const [destacados, setDestacados] = useState<Producto[]>([]);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    listarProductos()
+      .then((lista) => {
+        setDestacados(
+          CODIGOS_DESTACADOS.map((codigo) => lista.find((producto) => producto.codigo === codigo)).filter(
+            (producto): producto is Producto => producto !== undefined,
+          ),
+        );
+      })
+      .catch(() => setError("No se pudieron cargar los destacados. Revisa que el backend esté en marcha."));
+  }, []);
 
   return (
     <>
@@ -26,7 +38,7 @@ function Inicio() {
 
       <section className="container py-5">
         <h2 className="mb-4">Productos destacados</h2>
-        <ListaProductos productos={destacados} />
+        {error ? <p>{error}</p> : <ListaProductos productos={destacados} />}
       </section>
     </>
   );

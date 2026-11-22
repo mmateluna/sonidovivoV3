@@ -1,14 +1,26 @@
-import { useState, type ChangeEvent } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import ListaProductos from "../componentes/organismos/ListaProductos";
 import FiltroCatalogo from "../componentes/moleculas/FiltroCatalogo";
-import { categorias, productos } from "../datos/productos";
+import { listarProductos } from "../servicios/api";
+import type { Producto } from "../tipos";
 
 function Catalogo() {
-  // Texto y categoría son campos controlados: cada cambio vuelve a armar la lista.
   const [nombre, setNombre] = useState("");
   const [categoria, setCategoria] = useState("");
+  const [productos, setProductos] = useState<Producto[]>([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    listarProductos()
+      .then(setProductos)
+      .catch(() => setError("No se pudo cargar el catálogo. Revisa que el backend esté en marcha."))
+      .finally(() => setCargando(false));
+  }, []);
 
   const texto = nombre.trim().toLowerCase();
+  // Las categorías del filtro salen de los productos que hay ahora, no de una lista fija.
+  const categorias = Array.from(new Set(productos.map((producto) => producto.categoria))).sort();
   const visibles = productos.filter((producto) => {
     const coincideNombre = producto.nombre.toLowerCase().includes(texto);
     const coincideCategoria = categoria === "" || producto.categoria === categoria;
@@ -34,7 +46,11 @@ function Catalogo() {
         onNombre={cambiarNombre}
         onCategoria={cambiarCategoria}
       />
-      {visibles.length === 0 ? (
+      {cargando ? (
+        <p>Cargando catálogo...</p>
+      ) : error ? (
+        <p>{error}</p>
+      ) : visibles.length === 0 ? (
         <p>No hay productos que coincidan con la búsqueda.</p>
       ) : (
         <ListaProductos productos={visibles} />

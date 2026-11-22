@@ -6,6 +6,7 @@ import Inicio from "./paginas/Inicio";
 import Catalogo from "./paginas/Catalogo";
 import DetalleProducto from "./paginas/DetalleProducto";
 import Carrito from "./paginas/Carrito";
+import Pago from "./paginas/Pago";
 import Login from "./paginas/Login";
 import Registro from "./paginas/Registro";
 import Contacto from "./paginas/Contacto";
@@ -16,6 +17,7 @@ import NoEncontrada from "./paginas/NoEncontrada";
 import AdminInicio from "./paginas/AdminInicio";
 import AdminProductos from "./paginas/AdminProductos";
 import AdminUsuarios from "./paginas/AdminUsuarios";
+import RutaProtegida from "./componentes/plantillas/RutaProtegida";
 
 // Aquí se define el mapa de rutas de toda la aplicación (equivale a los 15 archivos .html).
 function App() {
@@ -30,6 +32,7 @@ function App() {
           {/* Ruta dinámica: ":id" cambia según el producto (/producto/3, /producto/12...) */}
           <Route path="/producto/:id" element={<DetalleProducto />} />
           <Route path="/carrito" element={<Carrito />} />
+          <Route path="/pago" element={<Pago />} />
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
           <Route path="/contacto" element={<Contacto />} />
@@ -39,11 +42,15 @@ function App() {
           <Route path="*" element={<NoEncontrada />} />
         </Route>
 
-        {/* Panel de administración, con su propio Navbar */}
-        <Route path="/admin" element={<LayoutAdmin />}>
-          <Route index element={<AdminInicio />} />
-          <Route path="productos" element={<AdminProductos />} />
-          <Route path="usuarios" element={<AdminUsuarios />} />
+        {/* El panel pide sesión. Productos: administrador o vendedor. Usuarios: solo administrador. */}
+        <Route element={<RutaProtegida roles={["Administrador", "Vendedor"]} />}>
+          <Route path="/admin" element={<LayoutAdmin />}>
+            <Route index element={<AdminInicio />} />
+            <Route path="productos" element={<AdminProductos />} />
+            <Route element={<RutaProtegida roles={["Administrador"]} destino="/admin" />}>
+              <Route path="usuarios" element={<AdminUsuarios />} />
+            </Route>
+          </Route>
         </Route>
       </Routes>
     </>

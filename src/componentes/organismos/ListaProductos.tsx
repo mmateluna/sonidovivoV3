@@ -10,9 +10,9 @@ interface ListaProductosProps {
 function ListaProductos({ productos }: ListaProductosProps) {
   const { agregar } = useCarrito();
 
-  const manejarAgregar = (id: number) => {
+  const manejarAgregar = (id: number, cantidad: number) => {
     const producto = productos.find((p) => p.id === id);
-    if (producto) agregar(producto);
+    if (producto) agregar(producto, cantidad);
   };
 
   return (
@@ -26,6 +26,7 @@ function ListaProductos({ productos }: ListaProductosProps) {
             categoria={producto.categoria}
             precio={producto.precio}
             imagen={producto.imagen}
+            stock={producto.stock}
             onAgregar={manejarAgregar}
           />
         </div>

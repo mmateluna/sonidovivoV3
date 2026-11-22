@@ -1,7 +1,11 @@
-import { beforeEach, describe, expect, test } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, test, vi } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import AdminProductos from "../paginas/AdminProductos";
+
+vi.mock("../servicios/api", async () => {
+  return await import("./apiMock");
+});
 
 // Cada prueba parte de la semilla: el admin lee el repositorio, y el repositorio lee localStorage.
 beforeEach(() => {
@@ -25,12 +29,13 @@ describe("admin de productos", () => {
 
     await crearProductoDePrueba();
 
-    expect(screen.getByRole("row", { name: /Producto de prueba/ })).toBeInTheDocument();
-  });
+    expect(await screen.findByRole("row", { name: /Producto de prueba/ })).toBeInTheDocument();
+  }, 20000);
 
   test("editar cambia el nombre en la tabla", async () => {
     const usuario = userEvent.setup();
     render(<AdminProductos />);
+    await screen.findAllByRole("button", { name: "Editar" });
 
     await usuario.click(screen.getAllByRole("button", { name: "Editar" })[0]);
     const nombre = screen.getByLabelText("Nombre del producto");
@@ -38,18 +43,19 @@ describe("admin de productos", () => {
     await usuario.type(nombre, "Guitarra editada");
     await usuario.click(screen.getByRole("button", { name: "Guardar producto" }));
 
-    expect(screen.getByRole("row", { name: /Guitarra editada/ })).toBeInTheDocument();
+    expect(await screen.findByRole("row", { name: /Guitarra editada/ })).toBeInTheDocument();
     expect(screen.queryByRole("row", { name: /Guitarra Acústica Folk/ })).not.toBeInTheDocument();
-  });
+  }, 20000);
 
   test("eliminar quita la fila de la tabla", async () => {
     const usuario = userEvent.setup();
     render(<AdminProductos />);
 
-    const fila = screen.getByRole("row", { name: /Guitarra Acústica Folk/ });
+    await screen.findByRole("row", { name: /Guitarra Acústica Folk/ });
     await usuario.click(screen.getAllByRole("button", { name: "Eliminar" })[0]);
 
-    expect(fila).not.toBeInTheDocument();
-    expect(screen.queryByRole("row", { name: /Guitarra Acústica Folk/ })).not.toBeInTheDocument();
-  });
+    await waitFor(() => {
+      expect(screen.queryByRole("row", { name: /Guitarra Acústica Folk/ })).not.toBeInTheDocument();
+    });
+  }, 20000);
 });

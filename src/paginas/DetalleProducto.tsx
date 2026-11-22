@@ -1,17 +1,32 @@
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import BotonLink from "../componentes/atomos/BotonLink";
 import BotonAgregar from "../componentes/moleculas/BotonAgregar";
+import SelectorCantidad from "../componentes/moleculas/SelectorCantidad";
 import { useCarrito } from "../contexto/CarritoContext";
-import { productos } from "../datos/productos";
+import { obtenerProducto } from "../servicios/api";
 import { formatearPrecio } from "../utilidades/formato";
+import type { Producto } from "../tipos";
 
 function DetalleProducto() {
-  // Ruta: /producto/:id  ->  useParams() lee ese ":id" (reemplaza URLSearchParams / ?id=)
   const { id } = useParams();
   const { agregar } = useCarrito();
+  const [producto, setProducto] = useState<Producto | null | undefined>(undefined);
+  const [cantidad, setCantidad] = useState(1);
 
-  // Buscamos el producto que corresponde al id recibido en la URL
-  const producto = productos.find((p) => p.id === Number(id));
+  useEffect(() => {
+    obtenerProducto(Number(id))
+      .then(setProducto)
+      .catch(() => setProducto(null));
+  }, [id]);
+
+  if (producto === undefined) {
+    return (
+      <div className="container py-4">
+        <p>Cargando producto...</p>
+      </div>
+    );
+  }
 
   if (!producto) {
     return (
@@ -23,6 +38,8 @@ function DetalleProducto() {
       </div>
     );
   }
+
+  const hayStock = producto.stock > 0;
 
   return (
     <div className="container py-4">
@@ -36,14 +53,30 @@ function DetalleProducto() {
         <div className="col-12 col-md-6">
           <p className="categoria small text-uppercase mb-1">{producto.categoria}</p>
           <h2>{producto.nombre}</h2>
-          <p>
-            <strong>{producto.marca}</strong> · {producto.modelo}
-          </p>
+          {(producto.marca || producto.modelo) && (
+            <p>
+              <strong>{producto.marca}</strong>
+              {producto.modelo ? ` · ${producto.modelo}` : ""}
+            </p>
+          )}
           <p className="precio display-6 fw-bold my-3">{formatearPrecio(producto.precio)}</p>
           <p>{producto.descripcion}</p>
+          <p>{hayStock ? `Stock disponible: ${producto.stock}` : "Sin stock"}</p>
 
-          <div className="d-flex flex-wrap gap-2 mt-4">
-            <BotonAgregar texto="Agregar al carrito" onAgregar={() => agregar(producto)} />
+          <div className="d-flex flex-wrap align-items-end gap-2 mt-4">
+            {hayStock && (
+              <SelectorCantidad
+                id="cantidad-detalle"
+                valor={cantidad}
+                maximo={producto.stock}
+                onChange={setCantidad}
+              />
+            )}
+            <BotonAgregar
+              texto="Agregar al carrito"
+              deshabilitado={!hayStock}
+              onAgregar={() => agregar(producto, cantidad)}
+            />
             <BotonLink to="/catalogo" variante="secondary">
               Volver al catálogo
             </BotonLink>

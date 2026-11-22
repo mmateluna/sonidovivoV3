@@ -22,6 +22,7 @@ export interface ItemCarrito {
   precio: number;
   imagen: string;
   cantidad: number;
+  stock: number; // tope al cambiar la cantidad en el carrito
 }
 
 export interface Novedad {
@@ -41,6 +42,7 @@ export interface Region {
 export type TipoUsuario = "Administrador" | "Vendedor" | "Cliente";
 
 export interface UsuarioAdmin {
+  id?: number;
   run: string;
   nombre: string;
   apellidos?: string; // el formulario los pide; la semilla antigua no los trae
@@ -50,6 +52,13 @@ export interface UsuarioAdmin {
   comuna: string;
   fechaNacimiento?: string;
   direccion?: string;
+}
+
+/** Lo que devuelve el login: los dos tokens y el usuario, sin la contraseña. */
+export interface Sesion {
+  token: string;
+  refresh: string;
+  usuario: UsuarioAdmin;
 }
 
 /** Variantes de color de Bootstrap que usan nuestros botones */
