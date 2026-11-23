@@ -3,6 +3,7 @@ import CampoFormulario from "../moleculas/CampoFormulario";
 import CampoTextArea from "../moleculas/CampoTextArea";
 import Boton from "../atomos/Boton";
 import { validarContacto, hayErrores, type DatosContacto, type Errores } from "../../utilidades/validaciones";
+import { enviarContacto } from "../../servicios/api";
 
 const DATOS_VACIOS: DatosContacto = { nombre: "", correo: "", comentario: "" };
 
@@ -17,14 +18,25 @@ function FormularioContacto() {
     setExito(false);
   };
 
-  const manejarEnvio = (evento: FormEvent<HTMLFormElement>) => {
+  const manejarEnvio = async (evento: FormEvent<HTMLFormElement>) => {
     evento.preventDefault();
     const nuevosErrores = validarContacto(datos);
     setErrores(nuevosErrores);
-
-    if (!hayErrores(nuevosErrores)) {
+    if (hayErrores(nuevosErrores)) {
+      setExito(false);
+      return;
+    }
+    try {
+      await enviarContacto({
+        nombre: datos.nombre.trim(),
+        correo: datos.correo.trim(),
+        comentario: datos.comentario.trim(),
+      });
       setExito(true);
-      setDatos(DATOS_VACIOS); // equivale al form.reset() de la versión HTML
+      setDatos(DATOS_VACIOS);
+    } catch (error) {
+      setExito(false);
+      setErrores({ comentario: error instanceof Error ? error.message : "No se pudo enviar el mensaje." });
     }
   };
 

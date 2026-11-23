@@ -1,16 +1,20 @@
 package cl.sonidovivo;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import cl.sonidovivo.modelo.CarritoItem;
+import cl.sonidovivo.repository.CarritoItemRepositorio;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.persistence.EntityManager;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 import javax.crypto.SecretKey;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +34,14 @@ class CarritoIntegracionTest {
   @Autowired
   private MockMvc mvc;
 
+  @Autowired
+  private CarritoItemRepositorio items;
+
+  @Autowired
+  private EntityManager em;
+
   @Test
-  void guardarYPagarDejaElPedidoYVaciaElCarrito() throws Exception {
+  void guardarDejaLaLineaEnLaBase() throws Exception {
     mvc.perform(get("/api/carrito")).andExpect(status().isUnauthorized());
 
     String token = token();
@@ -46,17 +56,12 @@ class CarritoIntegracionTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.cantidad").value(2));
 
-    mvc.perform(post("/api/pedidos")
-            .header("Authorization", "Bearer " + token)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"metodo\":\"debito\"}"))
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.total").value(2000))
-        .andExpect(jsonPath("$.metodo").value("Tarjeta de débito"));
-
-    mvc.perform(get("/api/carrito").header("Authorization", "Bearer " + token))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(0));
+    em.flush();
+    em.clear();
+    List<CarritoItem> guardadas = items.findByUsuarioId(3L);
+    assertEquals(1, guardadas.size());
+    assertEquals(2, guardadas.get(0).getCantidad());
+    assertEquals("Guitarra", guardadas.get(0).getNombre());
   }
 
   private String token() {

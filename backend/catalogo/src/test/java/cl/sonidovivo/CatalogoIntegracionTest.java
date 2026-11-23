@@ -8,7 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import cl.sonidovivo.modelo.Producto;
-import cl.sonidovivo.repositorio.ProductoRepositorio;
+import cl.sonidovivo.repository.ProductoRepositorio;
 import com.jayway.jsonpath.JsonPath;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;

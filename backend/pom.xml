@@ -16,12 +16,16 @@
   <version>1.0.0</version>
   <packaging>pom</packaging>
   <name>sonido-vivo</name>
-  <description>Tres microservicios: cuentas, catálogo y carrito</description>
+  <description>Siete microservicios: auth, usuarios, catálogo, carrito, pedidos, pagos y contacto</description>
 
   <modules>
-    <module>cuentas</module>
     <module>catalogo</module>
+    <module>auth</module>
+    <module>usuarios</module>
     <module>carrito</module>
+    <module>pedidos</module>
+    <module>pagos</module>
+    <module>contacto</module>
   </modules>
 
   <properties>

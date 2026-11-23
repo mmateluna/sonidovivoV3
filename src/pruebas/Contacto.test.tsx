@@ -1,7 +1,11 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Contacto from "../paginas/Contacto";
+
+vi.mock("../servicios/api", () => ({
+  enviarContacto: vi.fn().mockResolvedValue(undefined),
+}));
 
 describe("página Contacto", () => {
   test("muestra el título y los campos", () => {

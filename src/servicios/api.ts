@@ -187,7 +187,11 @@ export function vaciarCarrito(): Promise<void> {
 }
 
 export function crearPedido(metodo: string): Promise<{ id: number; metodo: string; total: number }> {
-  return pedirJson("/api/pedidos", "POST", { metodo });
+  return pedirJson("/api/pagos", "POST", { metodo });
+}
+
+export function enviarContacto(datos: { nombre: string; correo: string; comentario: string }): Promise<void> {
+  return pedirJson("/api/contacto", "POST", datos, false);
 }
 
 function cuerpoUsuario(datos: DatosUsuario) {

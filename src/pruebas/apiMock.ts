@@ -95,6 +95,8 @@ export async function crearPedido(metodo: string) {
   return { id: 1, metodo, total: 0 };
 }
 
+export async function enviarContacto(_datos: { nombre: string; correo: string; comentario: string }): Promise<void> {}
+
 export function usarCredenciales(_token: string | null, _refresh: string | null) {}
 
 export function credencialesActuales() {

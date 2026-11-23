@@ -12,7 +12,7 @@
 
   <artifactId>sonido-vivo-carrito</artifactId>
   <name>sonido-vivo-carrito</name>
-  <description>Carrito y pedidos</description>
+  <description>Líneas del carrito</description>
 
   <dependencies>
     <dependency>

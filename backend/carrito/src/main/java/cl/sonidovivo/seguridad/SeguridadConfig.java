@@ -34,7 +34,7 @@ public class SeguridadConfig {
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
             .requestMatchers("/h2-console/**").permitAll()
-            .requestMatchers("/api/carrito", "/api/carrito/**", "/api/pedidos", "/api/pedidos/**").authenticated()
+            .requestMatchers("/api/carrito", "/api/carrito/**").authenticated()
             .anyRequest().authenticated()
         )
         .exceptionHandling(errores -> errores

@@ -4,15 +4,17 @@ import react from "@vitejs/plugin-react";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // En desarrollo, Vite reparte /api entre los tres microservicios.
+  // En desarrollo, Vite reparte /api entre los siete microservicios.
   server: {
     // Cada ruta va a su microservicio. Vite es el único punto que ve el navegador.
     proxy: {
       "/api/productos": { target: "http://localhost:8081", changeOrigin: true },
       "/api/auth": { target: "http://localhost:8082", changeOrigin: true },
-      "/api/usuarios": { target: "http://localhost:8082", changeOrigin: true },
+      "/api/usuarios": { target: "http://localhost:8084", changeOrigin: true },
       "/api/carrito": { target: "http://localhost:8083", changeOrigin: true },
-      "/api/pedidos": { target: "http://localhost:8083", changeOrigin: true },
+      "/api/pedidos": { target: "http://localhost:8085", changeOrigin: true },
+      "/api/pagos": { target: "http://localhost:8086", changeOrigin: true },
+      "/api/contacto": { target: "http://localhost:8087", changeOrigin: true },
     },
   },
   // Configuración de Vitest (pruebas unitarias)

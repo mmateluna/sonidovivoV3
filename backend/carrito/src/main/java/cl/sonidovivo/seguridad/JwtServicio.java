@@ -8,7 +8,7 @@ import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-// Este servicio no emite tokens. Solo comprueba los que firmó cuentas, con la misma clave.
+// Este servicio no emite tokens. Solo comprueba los que firmó auth, con la misma clave.
 @Service
 public class JwtServicio {
 

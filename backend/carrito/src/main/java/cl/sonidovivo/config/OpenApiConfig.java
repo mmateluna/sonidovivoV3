@@ -18,7 +18,7 @@ public class OpenApiConfig {
     return new OpenAPI()
         .info(new Info()
             .title("Sonido Vivo — Carrito")
-            .description("Carrito y pedidos. El token lo emite el servicio de cuentas, puerto 8082.")
+            .description("Líneas del carrito. El pago lo hace el servicio de pagos.")
             .version("1.0"))
         .addSecurityItem(new SecurityRequirement().addList(esquema))
         .components(new Components().addSecuritySchemes(esquema, new SecurityScheme()
