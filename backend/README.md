@@ -16,7 +16,7 @@ Auth pregunta a usuarios si el correo y la clave son correctos, y después firma
 
 ## Arrancar
 
-Hace falta JDK 17 o superior y Maven 3.9 o superior. Desde esta carpeta, en siete terminales:
+Hace falta JDK 25 o superior y Maven 3.9 o superior. Desde esta carpeta, en siete terminales:
 
 ```bash
 mvn -pl catalogo spring-boot:run

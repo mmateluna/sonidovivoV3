@@ -88,8 +88,8 @@ async function pedir<T>(ruta: string, opciones: RequestInit = {}, conAuth = true
     respuesta = await ejecutar();
   }
   if (!respuesta.ok) throw new Error(await mensajeDe(respuesta));
-  if (respuesta.status === 204) return undefined as T;
-  return respuesta.json() as Promise<T>;
+  const texto = await respuesta.text();
+  return (texto ? JSON.parse(texto) : undefined) as T;
 }
 
 function pedirJson<T>(ruta: string, metodo: string, cuerpo?: unknown, conAuth = true): Promise<T> {

@@ -101,38 +101,30 @@ export function CarritoProvider({ children }: { children: ReactNode }) {
   const agregar = (producto: Producto, cantidad = 1) => {
     if (producto.stock < 1) return;
     const pedida = Math.max(1, Math.floor(cantidad));
-    let siguiente: ItemCarrito | null = null;
-    setItems((anteriores) => {
-      const existe = anteriores.find((item) => item.id === producto.id);
-      const yaTenida = existe?.cantidad ?? 0;
-      const cantidadNueva = Math.min(yaTenida + pedida, producto.stock);
-      const item: ItemCarrito = {
-        id: producto.id,
-        nombre: producto.nombre,
-        precio: producto.precio,
-        imagen: producto.imagen,
-        cantidad: cantidadNueva,
-        stock: producto.stock,
-      };
-      siguiente = item;
-      if (existe) return anteriores.map((actual) => (actual.id === producto.id ? item : actual));
-      return [...anteriores, item];
-    });
-    if (usuario && siguiente) void guardarItemCarrito(siguiente);
+    const actual = items.find((item) => item.id === producto.id);
+    const item: ItemCarrito = {
+      id: producto.id,
+      nombre: producto.nombre,
+      precio: producto.precio,
+      imagen: producto.imagen,
+      cantidad: Math.min((actual?.cantidad ?? 0) + pedida, producto.stock),
+      stock: producto.stock,
+    };
+    setItems((anteriores) =>
+      anteriores.some((e) => e.id === producto.id)
+        ? anteriores.map((e) => (e.id === producto.id ? item : e))
+        : [...anteriores, item],
+    );
+    if (usuario) void guardarItemCarrito(item);
   };
 
   const cambiarCantidad = (id: number, cantidad: number) => {
-    let siguiente: ItemCarrito | null = null;
-    setItems((anteriores) =>
-      anteriores.map((item) => {
-        if (item.id !== id) return item;
-        const tope = item.stock > 0 ? item.stock : 99;
-        const nueva = Math.min(Math.max(1, Math.floor(cantidad)), tope);
-        siguiente = { ...item, cantidad: nueva };
-        return siguiente;
-      }),
-    );
-    if (usuario && siguiente) void guardarItemCarrito(siguiente);
+    const actual = items.find((item) => item.id === id);
+    if (!actual) return;
+    const tope = actual.stock > 0 ? actual.stock : 99;
+    const item: ItemCarrito = { ...actual, cantidad: Math.min(Math.max(1, Math.floor(cantidad)), tope) };
+    setItems((anteriores) => anteriores.map((e) => (e.id === id ? item : e)));
+    if (usuario) void guardarItemCarrito(item);
   };
 
   const eliminar = (id: number) => {

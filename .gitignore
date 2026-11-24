@@ -6,3 +6,6 @@ backend/data
 pdf-extract.txt
 .vscode/*
 !.vscode/extensions.json
+
+node_modules/
+dist/
